@@ -1,6 +1,9 @@
 import socket
 
 
+MAX_SIZE = 1 << 20
+
+
 class Origin:
     def __init__(self, address, port):
         self.address = address
@@ -20,7 +23,7 @@ class Connection:
             self.connection = connection
 
     def receiveData(self):
-        return self.connection.recv(4096)
+        return self.connection.recv(MAX_SIZE)
 
     def receiveRequest(self):
         return Request.fromData(self.receiveData())
@@ -107,8 +110,11 @@ class Response:
         return Response(protocol, status, headers, content)
 
 
-def getResponseForRequest(origin, request):
+def getResponseDataForRequest(origin, request):
     connection = Connection(origin)
     connection.sendRequest(request)
     responseData = connection.receiveData()
-    return Response.fromData(responseData)
+    return responseData
+
+def getResponseForRequest(origin, request):
+    return Response(getResponseDataForRequest(origin, request))
